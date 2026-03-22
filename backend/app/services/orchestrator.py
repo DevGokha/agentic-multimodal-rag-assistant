@@ -64,6 +64,11 @@ Question: {query}
 Answer (keep it concise):"""
         response = llm.invoke(final_prompt)
 
+    # Step 4: Extract text from LLM response
+    #         ChatGroq returns an AIMessage object; Ollama returns a plain string
+    if hasattr(response, "content"):
+        response = response.content
+
     add_to_memory(query, response)
 
     # Step 5: Log the response time and a preview of the answer

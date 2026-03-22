@@ -1,4 +1,11 @@
+import os
 import logging
+from dotenv import load_dotenv
+
+# Step 0a: Load environment variables from .env file BEFORE importing app modules
+# so that modules like image.py can read GROQ_API_KEY at import time
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import chat, upload
@@ -17,10 +24,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Step 1: Enable CORS so the React frontend (port 5173) can call the backend (port 8000)
+# Step 1: Enable CORS — reads allowed origins from env var (for Docker support)
+#         Defaults to http://localhost:5173 for local development
+cors_origins = os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

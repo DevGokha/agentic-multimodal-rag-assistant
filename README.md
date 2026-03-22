@@ -1,6 +1,6 @@
 # Agentic Multimodal RAG Assistant
 
-An intelligent AI assistant built with a **multi-agent architecture** that autonomously routes queries to specialized agents — LLM, RAG, Web Search, Vision, and Calculator — based on user intent. Powered by local LLMs via Ollama (no API keys required).
+An intelligent AI assistant built with a **multi-agent architecture** that autonomously routes queries to specialized agents — LLM, RAG, Web Search, Vision, and Calculator — based on user intent. Supports both **local inference** (Ollama) and **cloud deployment** (Groq API — free).
 
 ---
 
@@ -15,6 +15,8 @@ An intelligent AI assistant built with a **multi-agent architecture** that auton
 - **Conversation Memory** — Maintains chat history for context-aware multi-turn dialogue
 - **Structured Logging** — Logs agent selection, response time, and query details for every request
 - **Agent Evaluation** — Automated test suite validating routing accuracy across all agent types
+- **Docker Support** — One-command startup with `docker-compose up` (backend + frontend + Ollama)
+- **Dual LLM Support** — Works with Ollama (local) or Groq API (free cloud) — auto-detects based on env vars
 - **Local-First** — Runs entirely offline using Ollama — no OpenAI/cloud API keys required
 
 ---
@@ -148,6 +150,25 @@ agentic-multimodal-rag-assistant/
 - **Node.js 18+**
 - **Ollama** — [Install from ollama.com](https://ollama.com)
 
+### Option A: Docker (Recommended)
+
+```bash
+# Clone the repo
+git clone https://github.com/DevGokha/agentic-multimodal-rag-assistant.git
+cd agentic-multimodal-rag-assistant
+
+# Start all services (backend + frontend + Ollama)
+docker-compose up --build
+
+# Pull models inside the Ollama container (first time only)
+docker exec -it ollama ollama pull tinyllama
+docker exec -it ollama ollama pull moondream
+```
+
+Then open **http://localhost:5173** in your browser.
+
+### Option B: Manual Setup
+
 ### 1. Clone the Repository
 
 ```bash
@@ -267,6 +288,44 @@ Every request is logged with agent selection and response time:
 2026-03-22 14:58:18 | INFO    | orchestrator         | Agent: web_search    | Query: search python 3.13
 2026-03-22 14:58:23 | INFO    | orchestrator         | Agent: web_search    | Time: 4.99s | Response: ...
 ```
+
+---
+
+## Deployment (Free)
+
+Deploy the project for free using **Render** (backend) + **Vercel** (frontend) + **Groq** (LLM).
+
+### 1. Get a Free Groq API Key
+
+- Sign up at [console.groq.com](https://console.groq.com)
+- Create an API key from the dashboard
+
+### 2. Deploy Backend on Render
+
+1. Go to [render.com](https://render.com) and create a **New Web Service**
+2. Connect your GitHub repo and select the `backend/` directory as root
+3. Set **Build Command**: `pip install -r requirements.txt`
+4. Set **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+5. Add these **Environment Variables**:
+   - `GROQ_API_KEY` = your Groq API key
+   - `CORS_ORIGINS` = your Vercel frontend URL (e.g., `https://your-app.vercel.app`)
+
+### 3. Deploy Frontend on Vercel
+
+1. Go to [vercel.com](https://vercel.com) and import your GitHub repo
+2. Set **Root Directory** to `frontend`
+3. Set **Framework Preset** to `Vite`
+4. Update `frontend/src/services/api.js` to point `BASE_URL` to your Render backend URL
+5. Deploy
+
+### How It Works
+
+| Environment  | LLM Provider         | Vision Model                | Config                     |
+| ------------ | -------------------- | --------------------------- | -------------------------- |
+| **Local**    | Ollama (TinyLlama)   | Ollama (Moondream)          | No env vars needed         |
+| **Deployed** | Groq (Llama 3.3 70B) | Groq (Llama 3.2 90B Vision) | Set `GROQ_API_KEY` env var |
+
+The app **auto-detects** which provider to use based on whether `GROQ_API_KEY` is set.
 
 ---
 

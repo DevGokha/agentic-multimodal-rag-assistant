@@ -1,0 +1,48 @@
+# Docker Compose — one-command startup for the full stack
+# Usage: docker-compose up --build
+
+version: "3.8"
+
+services:
+  # Step 1: Ollama — local LLM inference server
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Step 1a: Pull the required models on first startup
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Step 2: FastAPI backend
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - CORS_ORIGINS=http://localhost:5173,http://frontend:5173
+    volumes:
+      - backend_data:/app/data
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  # Step 3: React frontend
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  ollama_data:
+  backend_data:
