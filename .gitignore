@@ -1,0 +1,30 @@
+# Python virtual environment
+backend/venv/
+backend/__pycache__/
+backend/app/__pycache__/
+backend/app/**/__pycache__/
+
+# Node modules
+frontend/node_modules/
+
+# FAISS index (generated at runtime)
+backend/data/faiss_index/
+
+# Uploaded files (user data)
+backend/data/documents/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+*.pyc
+*.pyo
+__pycache__/
+
+# Environment
+.env
