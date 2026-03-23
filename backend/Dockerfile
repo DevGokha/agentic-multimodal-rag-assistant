@@ -7,7 +7,10 @@ WORKDIR /app
 # Step 3: Copy requirements first (for better Docker cache layer)
 COPY requirements.txt .
 
-# Step 4: Install Python dependencies
+# Step 4: Install CPU-only PyTorch first (saves ~1.5GB vs GPU version)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+# Step 5: Install remaining Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Step 5: Copy the rest of the backend code
