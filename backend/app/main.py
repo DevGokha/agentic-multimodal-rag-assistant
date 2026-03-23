@@ -24,13 +24,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Step 1: Enable CORS — reads allowed origins from env var (for Docker support)
-#         Defaults to http://localhost:5173 for local development
+# Step 1: Enable CORS — allow all origins for deployment
 cors_origins = os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
