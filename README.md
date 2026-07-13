@@ -7,9 +7,14 @@ An intelligent AI assistant built with a **multi-agent architecture** that auton
 ## Features
 
 - **Autonomous Agent Routing** — A planner agent analyzes each query and routes it to the best-suited agent automatically
-- **RAG Pipeline** — Upload PDFs, extract text, generate vector embeddings, store in FAISS, and retrieve relevant context for answers
-- **Vision Agent** — Upload images and get AI-powered descriptions using a local vision model (Moondream)
+- **RAG Pipeline** — Upload PDFs, extract text, generate vector embeddings, store in FAISS, and retrieve relevant context
+- **Vision Agent** — Upload images and get AI-powered descriptions using a local vision model
 - **Web Search Agent** — Fetch live information from the web via DuckDuckGo (no API key needed)
+- **Web Scraper Agent** — Extract and summarize content directly from HTTP/HTTPS URLs
+- **YouTube Summarizer** — Automatically fetch and summarize YouTube video transcripts
+- **Weather & Finance Agents** — Check live weather data and stock market prices
+- **Code Runner Agent** — Write and safely execute Python code to answer complex analytical queries
+- **Image Generation** — Generate dynamic UI mockups or visuals on-the-fly
 - **Calculator Tool** — Handles math expressions through a dedicated tool agent
 - **Voice I/O** — Speech-to-text input and text-to-speech output using the Web Speech API
 - **Conversation Memory** — Maintains chat history for context-aware multi-turn dialogue
@@ -66,11 +71,16 @@ An intelligent AI assistant built with a **multi-agent architecture** that auton
 
 | User Intent           | Detected By                              | Routed To                    | Example                     |
 | --------------------- | ---------------------------------------- | ---------------------------- | --------------------------- |
-| General question      | Default                                  | **LLM Agent** (Ollama)       | "What is machine learning?" |
+| General question      | Default fallback / similarity            | **LLM Agent**                | "What is machine learning?" |
 | PDF/document question | Keywords: `pdf`, `document`, `notes`     | **RAG Agent** (FAISS)        | "What does the PDF say?"    |
 | Live/current info     | Keywords: `search`, `latest`, `trending` | **Web Search Agent** (DDG)   | "Search latest AI news"     |
+| Weather query         | Keywords: `weather`, `temperature`       | **Weather Agent**            | "What is the weather like?" |
+| Finance query         | Keywords: `stock`, `price`, `finance`    | **Finance Agent**            | "What is the stock price?"  |
+| Coding / Math         | Keywords: `code`, `python`, `script`     | **Code Runner Agent**        | "Write a python script..."  |
+| Image generation      | Keywords: `generate image`, `draw`       | **Image Gen Agent**          | "Generate an image of..."   |
 | Math calculation      | Keyword: `calculate`                     | **Calculator Tool**          | "Calculate 25 \* 4"         |
-| Image upload          | File type detection                      | **Vision Agent** (Moondream) | Upload an image via the UI  |
+| YouTube link          | Fast-path regex: `youtube.com/watch`     | **YouTube Agent**            | "https://youtu.be/..."      |
+| Webpage link          | Fast-path regex: `http://`, `https://`   | **Web Scraper Agent**        | "https://en.wikipedia..."   |
 
 ---
 
@@ -111,6 +121,12 @@ agentic-multimodal-rag-assistant/
 |   |   |   +-- planner.py          # Autonomous agent router (intent detection)
 |   |   |   +-- tool.py             # Calculator tool agent
 |   |   |   +-- web_search.py       # DuckDuckGo web search agent
+|   |   |   +-- web_scraper.py      # Universal web page scraper
+|   |   |   +-- youtube.py          # YouTube transcript fetcher & summarizer
+|   |   |   +-- weather.py          # Open-Meteo API integration
+|   |   |   +-- finance.py          # Yahoo Finance stock market data
+|   |   |   +-- code_runner.py      # LLM code generation and local execution
+|   |   |   +-- image_gen.py        # DALL-E/Pollinations image generation
 |   |   +-- routes/
 |   |   |   +-- chat.py             # POST /chat endpoint
 |   |   |   +-- upload.py           # POST /upload + /upload-image endpoints
@@ -233,11 +249,13 @@ python -m tests.test_planner
 ## Usage
 
 1. **Chat** — Type any question and the planner agent auto-routes to the best agent
-2. **Upload PDF** — Click the 📎 button to upload a PDF, then ask "What does the PDF say?"
-3. **Upload Image** — Click the 🖼️ button to upload an image for AI description
-4. **Voice Input** — Click the 🎤 button to speak your question
-5. **Web Search** — Ask "Search latest AI news" to fetch live results
-6. **Calculator** — Ask "Calculate 25 \* 4 + 10" for math
+2. **Web Links** — Paste any `http://` link or YouTube video URL to get an instant summary
+3. **Coding & Data** — Ask the agent to "write a Python script to calculate X" and it will run it natively
+4. **Image Generation** — Ask it to "generate an image of a futuristic city" and it will render it in the chat
+5. **Upload PDF** — Click the 📎 button to upload a PDF, then ask "What does the PDF say?"
+6. **Upload Image** — Click the 🖼️ button to upload an image for AI description
+7. **Voice Input** — Click the 🎤 button to speak your question
+8. **Web Search & APIs** — Ask about live weather, stock prices, or current news.
 
 ---
 
