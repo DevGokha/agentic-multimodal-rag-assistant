@@ -41,6 +41,26 @@ TEST_CASES = [
     ("Summarize the document", "rag"),
     ("Explain the notes on page 5", "rag"),
     ("What is in the uploaded file?", "rag"),
+
+    # --- Weather queries ---
+    ("what is the weather like in Tokyo right now?", "weather"),
+    ("temperature outside", "weather"),
+    ("is it raining in london?", "weather"),
+
+    # --- Finance queries ---
+    ("What is Apple's stock price?", "finance"),
+    ("finance news", "finance"),
+    ("current price of TSLA", "finance"),
+
+    # --- Code Execution queries ---
+    ("write a python script to reverse a string", "code"),
+    ("generate the fibonacci sequence using python", "code"),
+    ("write code to solve this matrix", "code"),
+
+    # --- Image Generation queries ---
+    ("generate an image of a futuristic city", "image"),
+    ("draw a picture of a cat", "image"),
+    ("make a picture of a landscape", "image"),
 ]
 
 

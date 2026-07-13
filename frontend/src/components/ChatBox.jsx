@@ -58,6 +58,29 @@ function ChatBox() {
     e.target.value = null;
   };
 
+  // Helper to parse simple markdown images ![alt](url)
+  const renderMessageText = (text) => {
+    if (!text) return null;
+    const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = imageRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(<span key={lastIndex}>{text.substring(lastIndex, match.index)}</span>);
+      }
+      parts.push(
+        <img key={`img-${match.index}`} src={match[2]} alt={match[1]} style={{maxWidth: "100%", borderRadius: "8px", marginTop: "10px"}} />
+      );
+      lastIndex = imageRegex.lastIndex;
+    }
+    if (lastIndex < text.length) {
+      parts.push(<span key={lastIndex}>{text.substring(lastIndex)}</span>);
+    }
+    return parts.length > 0 ? parts : text;
+  };
+
   // Step 2: Auto-scroll to newest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -148,7 +171,7 @@ function ChatBox() {
                   className="chat-image-preview"
                 />
               )}
-              {msg.text}
+              {renderMessageText(msg.text)}
               {/* Step 9b: Speaker button on bot messages to replay audio */}
               {msg.role === "bot" && (
                 <button

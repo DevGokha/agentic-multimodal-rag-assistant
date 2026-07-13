@@ -1,0 +1,61 @@
+import httpx
+import logging
+from typing import Any
+
+logger = logging.getLogger("weather")
+
+def extract_city(query: str, llm: Any) -> str:
+    """Uses the LLM to extract the city name from the user's query."""
+    prompt = f"""Extract the city name from the following weather query. 
+Return ONLY the city name, nothing else. If you cannot find a city, return 'Unknown'.
+Query: {query}
+City:"""
+    try:
+        response = llm.invoke(prompt)
+        # Handle both AIMessage and string responses depending on LangChain version
+        content = response.content if hasattr(response, "content") else str(response)
+        city = content.strip()
+        
+        if "Unknown" in city or not city:
+            return ""
+        return city
+    except Exception as e:
+        logger.error(f"Error extracting city: {e}")
+        return ""
+
+def fetch_weather(city: str) -> str:
+    """Fetches weather data from Open-Meteo for the given city."""
+    if not city:
+        return "No city provided for weather search."
+    
+    try:
+        # Step 1: Geocoding (Convert city name to lat/lon)
+        geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1&language=en&format=json"
+        geo_res = httpx.get(geo_url, timeout=10.0)
+        geo_data = geo_res.json()
+        
+        if not geo_data.get("results"):
+            return f"Could not find coordinates for city: {city}"
+            
+        location = geo_data["results"][0]
+        lat = location["latitude"]
+        lon = location["longitude"]
+        full_name = f"{location.get('name', city)}, {location.get('country', '')}".strip(", ")
+        
+        # Step 2: Forecast (Get current weather)
+        weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
+        w_res = httpx.get(weather_url, timeout=10.0)
+        w_data = w_res.json()
+        
+        if "current_weather" not in w_data:
+            return "Could not retrieve current weather data."
+            
+        cw = w_data["current_weather"]
+        temp = cw.get("temperature")
+        windspeed = cw.get("windspeed")
+        
+        return f"The current weather in {full_name} is {temp}°C with a wind speed of {windspeed} km/h."
+        
+    except Exception as e:
+        logger.error(f"Error fetching weather for {city}: {e}")
+        return f"Failed to fetch weather: {str(e)}"
