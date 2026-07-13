@@ -1,6 +1,6 @@
 import numpy as np
 from app.utils.rag import has_faiss_index
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 import logging
 
 logger = logging.getLogger("planner")
@@ -99,7 +99,7 @@ INTENT_PHRASES = {
 
 # 2. Initialize the Embedding Model
 logger.info("Loading embedding model for Semantic Routing...")
-_embeddings_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+_embeddings_model = FastEmbedEmbeddings()
 
 # 3. Pre-compute embeddings for all intent phrases
 _intent_vectors = {}

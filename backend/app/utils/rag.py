@@ -1,6 +1,6 @@
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import CharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_community.vectorstores import FAISS
 import os
 
@@ -32,10 +32,8 @@ def process_pdf(file_path):
         else:
             return "No readable text found in the PDF. It may be a scanned/image document."
 
-    # Step 4: Create embeddings from text chunks using HuggingFace model
-    embeddings = HuggingFaceEmbeddings(
-        model_name="all-MiniLM-L6-v2"
-    )
+    # Step 4: Create embeddings from text chunks using FastEmbed (ONNX, lightweight)
+    embeddings = FastEmbedEmbeddings()
 
     # Step 5: Build a FAISS vector store from the document chunks and save it
     db = FAISS.from_documents(docs, embeddings)
@@ -44,9 +42,7 @@ def process_pdf(file_path):
     return f"PDF processed and stored! ({len(docs)} chunks indexed)"
 
 def query_pdf(query):
-    embeddings = HuggingFaceEmbeddings(
-        model_name="all-MiniLM-L6-v2"
-    )
+    embeddings = FastEmbedEmbeddings()
 
     db = FAISS.load_local(DB_PATH, embeddings, allow_dangerous_deserialization=True)
 
