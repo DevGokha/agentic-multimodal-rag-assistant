@@ -59,12 +59,28 @@ INTENT_PHRASES = {
         "make a picture of",
         "render a 3d model of"
     ],
+    "youtube": [
+        "summarize this youtube video",
+        "what is this video about",
+        "explain the youtube link",
+        "what does this youtube video say",
+        "summarize the video at"
+    ],
+    "web_scraper": [
+        "summarize this article",
+        "read this webpage",
+        "scrape this website",
+        "what does this web page say",
+        "summarize the link",
+        "extract text from this link",
+        "what is the article about"
+    ],
     "rag": [
         "summarize the document",
         "what does the pdf say",
         "analyze the uploaded file",
         "from the notes",
-        "according to the pdf",
+        "According to the pdf",
         "Explain the notes on page 5",
         "What is in the uploaded file?",
         "what does the document say"
@@ -103,6 +119,14 @@ def cosine_similarity(v1, v2):
 
 def decide_agent(query: str):
     query_lower = query.strip().lower()
+
+    # Fast-path for explicit YouTube URLs
+    if "youtube.com/watch" in query_lower or "youtu.be/" in query_lower:
+        return "youtube"
+        
+    # Fast-path for other web URLs
+    if "http://" in query_lower or "https://" in query_lower:
+        return "web_scraper"
 
     # Embed the user's query
     query_vector = np.array(_embeddings_model.embed_query(query_lower))

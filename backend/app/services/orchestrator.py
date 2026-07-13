@@ -11,6 +11,8 @@ from app.agents.weather import extract_city, fetch_weather
 from app.agents.finance import extract_ticker, fetch_stock_data
 from app.agents.code_runner import generate_code, execute_code
 from app.agents.image_gen import enhance_prompt, get_image_url
+from app.agents.youtube import extract_video_id, fetch_transcript, summarize_video
+from app.agents.web_scraper import extract_url, scrape_website, summarize_page
 from app.utils.rag import query_pdf
 
 # Step 0: Create a logger for the orchestrator module
@@ -162,6 +164,36 @@ def image_node(state: AgentState):
     response = f"Here is your image:\n\n![{enhanced_prompt}]({image_url})"
     return {"response": response}
 
+def youtube_node(state: AgentState):
+    query = state["query"]
+    llm = state["llm"]
+    
+    video_id = extract_video_id(query)
+    if not video_id:
+        return {"response": "I couldn't find a valid YouTube link in your message. Please provide one!"}
+        
+    transcript = fetch_transcript(video_id)
+    if not transcript:
+        return {"response": "I couldn't retrieve the transcript for this video. It might not have closed captions enabled."}
+        
+    summary = summarize_video(query, transcript, llm)
+    return {"response": summary}
+
+def web_scraper_node(state: AgentState):
+    query = state["query"]
+    llm = state["llm"]
+    
+    url = extract_url(query)
+    if not url:
+        return {"response": "I couldn't find a valid web link in your message."}
+        
+    page_content = scrape_website(url)
+    if not page_content:
+        return {"response": "I couldn't retrieve or read the content from this website. It might be blocking scrapers."}
+        
+    summary = summarize_page(query, page_content, llm)
+    return {"response": summary}
+
 def default_llm_node(state: AgentState):
     query = state["query"]
     llm = state["llm"]
@@ -188,6 +220,8 @@ def build_graph():
     workflow.add_node("finance", finance_node)
     workflow.add_node("code", code_node)
     workflow.add_node("image", image_node)
+    workflow.add_node("youtube", youtube_node)
+    workflow.add_node("web_scraper", web_scraper_node)
     workflow.add_node("tool", tool_node)
     workflow.add_node("default_llm", default_llm_node)
     
@@ -205,6 +239,8 @@ def build_graph():
             "finance": "finance",
             "code": "code",
             "image": "image",
+            "youtube": "youtube",
+            "web_scraper": "web_scraper",
             "tool": "tool",
             "llm": "default_llm"
         }
@@ -217,6 +253,8 @@ def build_graph():
     workflow.add_edge("finance", END)
     workflow.add_edge("code", END)
     workflow.add_edge("image", END)
+    workflow.add_edge("youtube", END)
+    workflow.add_edge("web_scraper", END)
     workflow.add_edge("tool", END)
     workflow.add_edge("default_llm", END)
     
@@ -250,6 +288,11 @@ async def run_agent(query, llm):
     
     agent_type = final_state["agent_type"]
     response = final_state["response"]
+    
+    # EXTREME DEBUGGING
+    logger.error(f"DEBUG: Input Query: {query}")
+    logger.error(f"DEBUG: Agent Type Evaluated: {agent_type}")
+    logger.error(f"DEBUG: Final Response: {response}")
 
     # Step 0b: Log which agent was selected for this query
     logger.info("Agent: %-12s | Query: %s", agent_type, query)
