@@ -93,7 +93,14 @@ INTENT_PHRASES = {
         "what is machine learning",
         "How does gravity work?",
         "write a poem",
-        "explain to me"
+        "explain to me",
+        "what is the capital of",
+        "who is the president",
+        "where is this located",
+        "when did this happen",
+        "can you answer a general question",
+        "tell me about history or geography",
+        "what does this mean"
     ]
 }
 
