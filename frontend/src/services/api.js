@@ -1,6 +1,9 @@
 // Step 0: Use environment variable for API URL (for deployment)
 //         Falls back to localhost:8000 for local development
-const BASE_URL = import.meta.env.VITE_API_URL || "https://agentic-multimodal-rag-assistant.onrender.com";
+let BASE_URL = import.meta.env.VITE_API_URL || "https://agentic-multimodal-rag-assistant.onrender.com";
+if (BASE_URL.endsWith('/')) {
+  BASE_URL = BASE_URL.slice(0, -1);
+}
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
