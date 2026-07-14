@@ -57,19 +57,14 @@ def fetch_weather(city: str) -> str:
         return f"The current weather in {full_name} is {temp}°C with a wind speed of {windspeed} km/h."
         
     except Exception as e:
-        logger.warning(f"Open-Meteo failed for {city}: {e}. Falling back to wttr.in...")
+        logger.warning(f"Open-Meteo failed for {city}: {e}. Falling back to Web Search...")
         try:
-            # Fallback to wttr.in which often works without IP blocks
-            wttr_url = f"https://wttr.in/{city}?format=j1"
-            w_res = httpx.get(wttr_url, timeout=10.0)
-            w_data = w_res.json()
+            from app.agents.web_search import web_search_tool
+            # Fallback to DuckDuckGo Web Search which we know works on Render
+            search_query = f"current weather temperature in {city}"
+            search_results = web_search_tool(search_query)
             
-            cw = w_data["current_condition"][0]
-            temp = cw.get("temp_C")
-            windspeed = cw.get("windspeedKmph")
-            desc = cw.get("weatherDesc")[0].get("value", "")
-            
-            return f"The current weather in {city} is {temp}°C, {desc}, with a wind speed of {windspeed} km/h."
+            return f"Weather Data from Web Search:\n{search_results}"
         except Exception as e2:
-            logger.error(f"Error fetching weather from fallback for {city}: {e2}")
+            logger.error(f"Error fetching weather from Web Search fallback for {city}: {e2}")
             return f"Failed to fetch weather: {str(e2)}"
