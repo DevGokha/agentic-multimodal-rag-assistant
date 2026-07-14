@@ -8,7 +8,11 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import chat, upload
+from app.routes import chat, upload, auth
+from app.db import engine, Base
+
+# Initialize database tables
+Base.metadata.create_all(bind=engine)
 
 # Step 0: Configure structured logging format
 # Shows timestamp, log level, module name, and the message
@@ -34,6 +38,7 @@ app.add_middleware(
 )
 
 # Include routes
+app.include_router(auth.router)
 app.include_router(chat.router)
 app.include_router(upload.router)
 

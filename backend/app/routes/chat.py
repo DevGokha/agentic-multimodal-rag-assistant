@@ -1,8 +1,10 @@
 import os
 import logging
-from fastapi import APIRouter
 from pydantic import BaseModel
+from fastapi import APIRouter, Depends
 from app.services.orchestrator import run_agent
+from app.utils.auth import get_current_user
+from app.models.user import User
 
 # Step 0: Create a logger for the chat route
 logger = logging.getLogger("chat")
@@ -41,7 +43,7 @@ class QueryRequest(BaseModel):
     query: str
 
 @router.post("/chat")
-async def chat(req: QueryRequest):
+async def chat(req: QueryRequest, current_user: User = Depends(get_current_user)):
     # Step 2: Log the incoming user query
     logger.info("Incoming query: %s", req.query)
     response = await run_agent(req.query, llm)

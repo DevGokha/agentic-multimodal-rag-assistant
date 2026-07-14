@@ -2,11 +2,17 @@
 //         Falls back to localhost:8000 for local development
 const BASE_URL = import.meta.env.VITE_API_URL || "https://agentic-multimodal-rag-assistant.onrender.com";
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return token ? { "Authorization": `Bearer ${token}` } : {};
+};
+
 export const sendQuery = async (query) => {
   const res = await fetch(`${BASE_URL}/chat`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...getAuthHeaders()
     },
     body: JSON.stringify({ query })
   });
@@ -20,6 +26,9 @@ export const uploadFile = async (file) => {
 
   const res = await fetch(`${BASE_URL}/upload`, {
     method: "POST",
+    headers: {
+      ...getAuthHeaders()
+    },
     body: formData
   });
 
@@ -33,8 +42,49 @@ export const uploadImage = async (file) => {
 
   const res = await fetch(`${BASE_URL}/upload-image`, {
     method: "POST",
+    headers: {
+      ...getAuthHeaders()
+    },
     body: formData
   });
+
+  return res.json();
+};
+
+export const login = async (email, password) => {
+  const formData = new URLSearchParams();
+  formData.append('username', email);
+  formData.append('password', password);
+
+  const res = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Login failed');
+  }
+
+  return res.json();
+};
+
+export const register = async (email, password) => {
+  const res = await fetch(`${BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Registration failed');
+  }
 
   return res.json();
 };

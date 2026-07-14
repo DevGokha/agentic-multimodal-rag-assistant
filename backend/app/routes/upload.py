@@ -1,7 +1,9 @@
 import time
 import logging
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Depends
 import os
+from app.utils.auth import get_current_user
+from app.models.user import User
 from app.utils.rag import process_pdf
 from app.utils.image import analyze_image
 
@@ -16,7 +18,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Step 1: Endpoint for uploading PDF files (processed for RAG)
 @router.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
     logger.info("PDF upload: %s", file.filename)
     start_time = time.time()
     file_path = os.path.join(UPLOAD_DIR, file.filename)
@@ -33,7 +35,7 @@ async def upload_file(file: UploadFile = File(...)):
 
 # Step 2: Endpoint for uploading images (analyzed by vision model)
 @router.post("/upload-image")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
     logger.info("Image upload: %s", file.filename)
     start_time = time.time()
     # Step 2a: Save the uploaded image to disk
