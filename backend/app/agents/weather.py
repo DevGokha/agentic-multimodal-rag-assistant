@@ -31,7 +31,7 @@ def fetch_weather(city: str) -> str:
     try:
         # Step 1: Geocoding (Convert city name to lat/lon)
         geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1&language=en&format=json"
-        geo_res = httpx.get(geo_url, timeout=5.0)
+        geo_res = httpx.get(geo_url, timeout=15.0)
         geo_data = geo_res.json()
         
         if not geo_data.get("results"):
@@ -44,7 +44,7 @@ def fetch_weather(city: str) -> str:
         
         # Step 2: Forecast (Get current weather)
         weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
-        w_res = httpx.get(weather_url, timeout=5.0)
+        w_res = httpx.get(weather_url, timeout=15.0)
         w_data = w_res.json()
         
         if "current_weather" not in w_data:
@@ -57,14 +57,27 @@ def fetch_weather(city: str) -> str:
         return f"The current weather in {full_name} is {temp}°C with a wind speed of {windspeed} km/h."
         
     except Exception as e:
-        logger.warning(f"Open-Meteo failed for {city}: {e}. Falling back to Web Search...")
+        logger.warning(f"Open-Meteo failed for {city}: {e}. Falling back to wttr.in...")
         try:
-            from app.agents.web_search import web_search_tool
-            # Fallback to DuckDuckGo Web Search which we know works on Render
-            search_query = f"current weather temperature in {city}"
-            search_results = web_search_tool(search_query)
+            # Fallback to wttr.in with User-Agent to bypass bot protections
+            wttr_url = f"https://wttr.in/{city}?format=j1"
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+            w_res = httpx.get(wttr_url, headers=headers, timeout=15.0)
+            w_data = w_res.json()
             
-            return f"Weather Data from Web Search:\n{search_results}"
+            cw = w_data["current_condition"][0]
+            temp = cw.get("temp_C")
+            windspeed = cw.get("windspeedKmph")
+            desc = cw.get("weatherDesc")[0].get("value", "")
+            
+            return f"The current weather in {city} is {temp}°C, {desc}, with a wind speed of {windspeed} km/h."
         except Exception as e2:
-            logger.error(f"Error fetching weather from Web Search fallback for {city}: {e2}")
-            return f"Failed to fetch weather: {str(e2)}"
+            logger.warning(f"wttr.in failed for {city}: {e2}. Falling back to Web Search...")
+            try:
+                from app.agents.web_search import web_search_tool
+                search_query = f"current weather temperature in {city} right now"
+                search_results = web_search_tool(search_query)
+                return f"Weather Data from Web Search:\n{search_results}"
+            except Exception as e3:
+                logger.error(f"Error fetching weather from Web Search fallback for {city}: {e3}")
+                return f"Failed to fetch weather from all sources."
