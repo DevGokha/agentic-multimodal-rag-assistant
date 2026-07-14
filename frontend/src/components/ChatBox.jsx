@@ -61,7 +61,7 @@ function ChatBox() {
   // Helper to parse simple markdown images ![alt](url)
   const renderMessageText = (text) => {
     if (!text) return null;
-    const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
+    const imageRegex = /!\[([\s\S]*?)\]\((.*?)\)/g;
     const parts = [];
     let lastIndex = 0;
     let match;
