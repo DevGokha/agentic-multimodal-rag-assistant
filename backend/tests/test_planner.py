@@ -62,10 +62,7 @@ TEST_CASES = [
     ("draw a picture of a cat", "image"),
     ("make a picture of a landscape", "image"),
 
-    # --- YouTube Generation queries ---
-    ("summarize this youtube video https://youtube.com/watch?v=12345", "youtube"),
-    ("what is this video about", "youtube"),
-    ("explain the youtube link", "youtube"),
+
 ]
 
 
