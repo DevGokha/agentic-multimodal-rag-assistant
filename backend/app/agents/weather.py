@@ -24,18 +24,18 @@ City:"""
         return ""
 
 def fetch_weather(city: str) -> str:
-    """Fetches weather data from Open-Meteo for the given city."""
+    """Fetches weather data from Open-Meteo or wttr.in for the given city."""
     if not city:
         return "No city provided for weather search."
     
     try:
         # Step 1: Geocoding (Convert city name to lat/lon)
         geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1&language=en&format=json"
-        geo_res = httpx.get(geo_url, timeout=10.0)
+        geo_res = httpx.get(geo_url, timeout=5.0)
         geo_data = geo_res.json()
         
         if not geo_data.get("results"):
-            return f"Could not find coordinates for city: {city}"
+            raise ValueError("No geocoding results.")
             
         location = geo_data["results"][0]
         lat = location["latitude"]
@@ -44,11 +44,11 @@ def fetch_weather(city: str) -> str:
         
         # Step 2: Forecast (Get current weather)
         weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
-        w_res = httpx.get(weather_url, timeout=10.0)
+        w_res = httpx.get(weather_url, timeout=5.0)
         w_data = w_res.json()
         
         if "current_weather" not in w_data:
-            return "Could not retrieve current weather data."
+            raise ValueError("No current weather data in response.")
             
         cw = w_data["current_weather"]
         temp = cw.get("temperature")
@@ -57,5 +57,19 @@ def fetch_weather(city: str) -> str:
         return f"The current weather in {full_name} is {temp}°C with a wind speed of {windspeed} km/h."
         
     except Exception as e:
-        logger.error(f"Error fetching weather for {city}: {e}")
-        return f"Failed to fetch weather: {str(e)}"
+        logger.warning(f"Open-Meteo failed for {city}: {e}. Falling back to wttr.in...")
+        try:
+            # Fallback to wttr.in which often works without IP blocks
+            wttr_url = f"https://wttr.in/{city}?format=j1"
+            w_res = httpx.get(wttr_url, timeout=10.0)
+            w_data = w_res.json()
+            
+            cw = w_data["current_condition"][0]
+            temp = cw.get("temp_C")
+            windspeed = cw.get("windspeedKmph")
+            desc = cw.get("weatherDesc")[0].get("value", "")
+            
+            return f"The current weather in {city} is {temp}°C, {desc}, with a wind speed of {windspeed} km/h."
+        except Exception as e2:
+            logger.error(f"Error fetching weather from fallback for {city}: {e2}")
+            return f"Failed to fetch weather: {str(e2)}"

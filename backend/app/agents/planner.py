@@ -59,13 +59,7 @@ INTENT_PHRASES = {
         "make a picture of",
         "render a 3d model of"
     ],
-    "youtube": [
-        "summarize this youtube video",
-        "what is this video about",
-        "explain the youtube link",
-        "what does this youtube video say",
-        "summarize the video at"
-    ],
+
     "web_scraper": [
         "summarize this article",
         "read this webpage",
@@ -127,10 +121,7 @@ def cosine_similarity(v1, v2):
 def decide_agent(query: str):
     query_lower = query.strip().lower()
 
-    # Fast-path for explicit YouTube URLs
-    if "youtube.com/watch" in query_lower or "youtu.be/" in query_lower:
-        return "youtube"
-        
+
     # Fast-path for other web URLs
     if "http://" in query_lower or "https://" in query_lower:
         return "web_scraper"
