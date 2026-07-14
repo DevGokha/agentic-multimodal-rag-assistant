@@ -44,8 +44,8 @@ function ChatBox() {
       const res = await uploadImage(file);
       const botMsg = { role: "bot", text: res.description || "Could not analyze the image." };
       setMessages((prev) => [...prev, botMsg]);
-      // Step 1h: Speak the image description aloud
-      speak(res.description);
+      // Step 1h: Disabled automatic speaking
+      // speak(res.description);
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -122,8 +122,8 @@ function ChatBox() {
       const res = await sendQuery(trimmed);
       const botMsg = { role: "bot", text: res.response };
       setMessages((prev) => [...prev, botMsg]);
-      // Step 4b2: Automatically speak the bot's response aloud
-      speak(res.response);
+      // Step 4b2: Disabled automatic speaking
+      // speak(res.response);
     } catch {
       // Step 4c: Handle errors gracefully
       setMessages((prev) => [
