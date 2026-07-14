@@ -153,8 +153,8 @@ def decide_agent(query: str):
     logger.info("Semantic Match: %s (Score: %.2f)", best_intent, highest_score)
 
     # Threshold fallback — if confidence is too low, route to llm to prevent random tools
-    if highest_score < 0.28:
-        logger.info("Score below threshold (0.28). Routing to llm.")
+    if highest_score < 0.40:
+        logger.info("Score below threshold (0.40). Routing to llm.")
         return "llm"
 
     # RAG condition — fallback to llm if no FAISS index exists
