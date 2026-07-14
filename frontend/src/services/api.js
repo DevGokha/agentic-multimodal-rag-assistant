@@ -1,6 +1,6 @@
 // Step 0: Use environment variable for API URL (for deployment)
-//         Falls back to localhost:8000 for local development
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
+//         Falls back to Render URL for production
+const BASE_URL = import.meta.env.VITE_API_URL || "https://agentic-multimodal-rag-assistant-1.onrender.com";
 
 export const sendQuery = async (query) => {
   const res = await fetch(`${BASE_URL}/chat`, {
